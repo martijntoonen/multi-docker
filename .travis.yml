@@ -1,0 +1,17 @@
+sudo: required
+services:
+  - docker
+
+before_install:
+  - docker build -t martijntoonen/react-test -f ./client/Dockerfile.dev ./client
+
+script:
+  - docker run -e CI=true martijntoonen/react-test npm test
+
+after_success:
+  - docker build -t martijntoonen/multi-client ./client
+  - docker build -t martijntoonen/multi-nginx ./nginx
+  - docker build -t martijntoonen/multi-server ./server
+  - docker build -t martijntoonen/multi-worker ./worker
+
+  language: generic
