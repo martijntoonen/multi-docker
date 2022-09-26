@@ -2,16 +2,26 @@ sudo: required
 services:
   - docker
 
+# Build image(s) used for testing
 before_install:
   - docker build -t martijntoonen/react-test -f ./client/Dockerfile.dev ./client
 
+# Perform actual test(s)
 script:
   - docker run -e CI=true martijntoonen/react-test npm test
 
+# Build images for production
 after_success:
   - docker build -t martijntoonen/multi-client ./client
   - docker build -t martijntoonen/multi-nginx ./nginx
   - docker build -t martijntoonen/multi-server ./server
   - docker build -t martijntoonen/multi-worker ./worker
-
-  language: generic
+# Log in to docker CLI
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+# Take prod images and push to docker hub 
+  - docker push martijntoonen/multi-client
+  - docker push martijntoonen/multi-nginx
+  - docker push martijntoonen/multi-server
+  - docker push martijntoonen/multi-worker
+  
+language: generic
